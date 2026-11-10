@@ -1,5 +1,7 @@
 from category import Category
+from type import Type
 from typecode import TypeCode
+
 from dataclasses import dataclass
 
 
@@ -7,5 +9,5 @@ from dataclasses import dataclass
 class Identifier:
     lex: str
     category: Category = Category.NO_CAT
-    type_code: TypeCode = TypeCode.NO_TYPE
-    width: int = len(type_code)
+    type: Type = Type(TypeCode.NO_TYPE, len(TypeCode.NO_TYPE))
+    address: int = -1

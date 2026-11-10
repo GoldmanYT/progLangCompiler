@@ -8,6 +8,7 @@ from lrtableelemtype import LRTableElemType
 from identifier import Identifier
 from codes import Code
 from scanner import find_in_id_table
+from type import Type
 
 
 class Sct:
@@ -28,10 +29,14 @@ class Sct:
         self.non_terminals: list[str] = []
         self.grammar = {}
         self.actions: dict[str, Callable[[list[Any], Token], None | Token]] = {
-            'A1': self.check_redeclaration,
-            'A2': self.declare_variable,
-            'A3': self.declare_type,
+            'A1': self.action1,
+            'A2': self.action2,
+            'A3': self.action3,
+            'A5': self.action5,
+            'A10': self.action10,
         }
+        self.next_address: int = 0
+        self.next_instruction: int = 0
         self.load_grammar()
 
     @staticmethod
@@ -39,51 +44,94 @@ class Sct:
         token.lex = '{pos}: Встречено "{lex}", ожидалось: {expected}'
         token.kwargs = {'expected': expected}
 
-    def check_redeclaration(
+    def get_variable_list(self) -> list[Identifier]:
+        return [identifier for identifier in self.id_table if identifier.category == Category.VAR_NAME]
+
+    def add_type(
+            self,
+            index: int,
+            category: Category,
+            type_: Type,
+    ):
+        identifier: Identifier = self.id_table[index]
+        identifier.category = category
+        identifier.type = type_
+
+        if category == Category.VAR_NAME:
+            while self.next_address % type_.width != 0:
+                self.next_address += 1
+            identifier.address = self.next_address
+            self.next_address += type_.width
+
+    def action1(
             self,
             stack: list[Any],
             token: Token,
     ) -> None | Token:
 
         i: int = find_in_id_table(self.id_table, token.lex)
+        identifier: Identifier = self.id_table[i]
 
-        if i != -1 and self.id_table[i].category != Category.NO_CAT:
-            token.lex = '{pos}: ' f'Переобъявление идентификатора: {token.lex}'
+        if identifier.category != Category.NO_CAT:
+            token.lex = '{pos}: ' f'Переобъявление идентификатора: {identifier.lex}'
             return token
 
         stack.append(i)
 
-    def declare_variable(
+    def action2(
+            self,
+            stack: list[Any],
+            _token: Token,
+    ) -> None | Token:
+
+        type_: Type = stack.pop()
+        var_i: int = stack.pop()
+
+        self.add_type(var_i, Category.TYPE_NAME, type_)
+        return
+
+    def action3(
             self,
             stack: list[Any],
             token: Token,
     ) -> None | Token:
 
         i: int = find_in_id_table(self.id_table, token.lex)
+        identifier: Identifier = self.id_table[i]
 
-        if i != -1:
-            var_i: int = stack.pop()
-            self.id_table[var_i].category = Category.VAR_NAME
-            if self.id_table[i].category != Category.TYPE_NAME:
-                token.lex = '{pos}: ' f'Идентификатор не является именем типа: {token.lex}'
-                return token
-            # FIXME: для структур
-            self.id_table[var_i].type_code = self.id_table[i].type_code
+        if identifier.category == Category.NO_CAT:
+            token.lex = '{pos}: ' f'Идентификатор не объявлен: {identifier.lex}'
+            return token
 
-    def declare_type(
+        if identifier.category != Category.TYPE_NAME:
+            token.lex = '{pos}: ' f'Идентификатор не является именем типа: {identifier.lex}'
+            return token
+
+        stack.append(identifier.type)
+
+    def action5(
             self,
             stack: list[Any],
-            token: Token,
+            _token: Token,
     ) -> None | Token:
 
-        i: int = find_in_id_table(self.id_table, token.lex)
+        # ИСПРАВИТЬ: Заглушка для структур
+        i: int = find_in_id_table(self.id_table, 'integer')
+        identifier: Identifier = self.id_table[i]
 
-        if i != -1:
-            var_i: int = stack.pop()
-            self.id_table[var_i].category = Category.TYPE_NAME
-            # FIXME: для структур
-            self.id_table[var_i].type_code = self.id_table[i].type_code
+        stack.append(identifier.type)
+        return
 
+    def action10(
+            self,
+            stack: list[Any],
+            _token: Token,
+    ) -> None | Token:
+
+        type_: Type = stack.pop()
+        var_i: int = stack.pop()
+
+        self.add_type(var_i, Category.VAR_NAME, type_)
         return
 
     def scan(self) -> None | Token:

@@ -7,6 +7,8 @@ from state import State
 from identifier import Identifier
 from tokens import Token
 from collections import defaultdict
+
+from type import Type
 from typecode import TypeCode
 
 
@@ -474,9 +476,9 @@ class Scanner:
         self.state = State.INITIAL
         self.pos = 0
         self.id_table = [
-            Identifier(TypeCode.INTEGER.value, Category.TYPE_NAME, TypeCode.INTEGER),
-            Identifier(TypeCode.FLOAT.value, Category.TYPE_NAME, TypeCode.FLOAT),
-            Identifier(TypeCode.BOOLEAN.value, Category.TYPE_NAME, TypeCode.BOOLEAN),
+            Identifier(TypeCode.INTEGER.value, Category.TYPE_NAME, Type(TypeCode.INTEGER, len(TypeCode.INTEGER))),
+            Identifier(TypeCode.FLOAT.value, Category.TYPE_NAME, Type(TypeCode.FLOAT, len(TypeCode.FLOAT))),
+            Identifier(TypeCode.BOOLEAN.value, Category.TYPE_NAME, Type(TypeCode.BOOLEAN, len(TypeCode.BOOLEAN))),
         ]
 
     def form_token(self, start: int) -> Token:
@@ -504,9 +506,9 @@ class Scanner:
             return token
 
         if token.code == Code.NUM and self.state == State.DIGIT_OTHER:
-            symbol = Identifier(token.lex, Category.CONST, TypeCode.INTEGER)
+            symbol = Identifier(token.lex, Category.CONST, Type(TypeCode.INTEGER, len(TypeCode.INTEGER)))
         elif token.code == Code.NUM and self.state == State.DIGIT_DOT_DIGIT_OTHER:
-            symbol = Identifier(token.lex, Category.CONST, TypeCode.FLOAT)
+            symbol = Identifier(token.lex, Category.CONST, Type(TypeCode.FLOAT, len(TypeCode.FLOAT)))
         else:
             symbol = Identifier(token.lex)
 
