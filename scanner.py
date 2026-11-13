@@ -472,14 +472,29 @@ class Scanner:
         if not self.code.endswith(Char.EOF.value):
             self.code += Char.EOF.value
 
+    @staticmethod
+    def get_new_id_table(
+            declared_identifiers: list[Identifier] = None
+    ) -> list[Identifier]:
+
+        id_table: list[Identifier] = []
+
+        if declared_identifiers is None:
+            for type_code in TypeCode:
+                if type_code not in (TypeCode.NO_TYPE, TypeCode.STRUCT):
+                    id_table.append(
+                        Identifier(type_code.value, Category.TYPE_NAME, Type(id_table, type_code, len(type_code))))
+        else:
+            for identifier in declared_identifiers:
+                if identifier.category == Category.TYPE_NAME:
+                    id_table.append(identifier)
+
+        return id_table
+
     def restart(self):
         self.state = State.INITIAL
         self.pos = 0
-        self.id_table = [
-            Identifier(TypeCode.INTEGER.value, Category.TYPE_NAME, Type(TypeCode.INTEGER, len(TypeCode.INTEGER))),
-            Identifier(TypeCode.FLOAT.value, Category.TYPE_NAME, Type(TypeCode.FLOAT, len(TypeCode.FLOAT))),
-            Identifier(TypeCode.BOOLEAN.value, Category.TYPE_NAME, Type(TypeCode.BOOLEAN, len(TypeCode.BOOLEAN))),
-        ]
+        self.id_table = self.get_new_id_table()
 
     def form_token(self, start: int) -> Token:
         token: Token = Token(*self.STATE_TO_TOKEN_PARAMS[self.state])
@@ -500,15 +515,15 @@ class Scanner:
             token.lex = None
             return token
 
-        i = find_in_id_table(self.id_table, token.lex)
-        if i != -1:
-            token.attr = i
+        identifier: Identifier | None = find_in_id_table(self.id_table, token.lex)
+        if identifier is not None:
+            token.attr = identifier
             return token
 
         if token.code == Code.NUM and self.state == State.DIGIT_OTHER:
-            symbol = Identifier(token.lex, Category.CONST, Type(TypeCode.INTEGER, len(TypeCode.INTEGER)))
+            symbol = Identifier(token.lex, Category.CONST, Type(self.id_table, TypeCode.INTEGER, len(TypeCode.INTEGER)))
         elif token.code == Code.NUM and self.state == State.DIGIT_DOT_DIGIT_OTHER:
-            symbol = Identifier(token.lex, Category.CONST, Type(TypeCode.FLOAT, len(TypeCode.FLOAT)))
+            symbol = Identifier(token.lex, Category.CONST, Type(self.id_table, TypeCode.FLOAT, len(TypeCode.FLOAT)))
         else:
             symbol = Identifier(token.lex)
 
@@ -561,13 +576,10 @@ class Scanner:
 def find_in_id_table(
         id_table: list[Identifier],
         lex: str,
-) -> int:
-    try:
-        i: int = [symbol.lex for symbol in id_table].index(lex)
-    except ValueError:
-        i: int = -1
-
-    return i
+) -> Identifier | None:
+    for identifier in id_table:
+        if identifier.lex == lex:
+            return identifier
 
 
 if __name__ == '__main__':

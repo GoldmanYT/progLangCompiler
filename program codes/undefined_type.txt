@@ -1,0 +1,19 @@
+-- Пример с типами данных и присваиваниями --
+procedure15 KuznetsovDA;
+using15
+    i32 integer;
+    f64 float;
+    b1 boolean;
+var15
+    a: i32;
+    b: f64;
+    c: b12;
+{
+    a <- 76;
+    b <- 42.52;
+    c <- true;
+    c <- false;
+}
+
+
+

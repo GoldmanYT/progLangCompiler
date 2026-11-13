@@ -6,6 +6,7 @@ class TypeCode(Enum):
     INTEGER = 'integer'
     FLOAT = 'float'
     BOOLEAN = 'boolean'
+    STRUCT = 'struct'
 
     def __len__(self):
         return {
@@ -13,4 +14,5 @@ class TypeCode(Enum):
             self.INTEGER: 4,
             self.FLOAT: 8,
             self.BOOLEAN: 1,
+            self.STRUCT: 0,
         }[self]

@@ -1,0 +1,21 @@
+-- Пример с арифметическими операциями --
+procedure15 KuznetsovDA;
+using15
+    i32 integer;
+    f64 float;
+    b1 boolean;
+    T class15 {
+        x: integer;
+    };
+var15
+    a: i32;
+    b: i32;
+    c: i32;
+    p: f64;
+    q: f64;
+    r: f64;
+    t: T;
+{
+    t.x <- t.x;
+}
+

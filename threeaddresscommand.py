@@ -7,28 +7,39 @@ from attribute import Attribute
 class ThreeAddressCommand:
     def __init__(
             self,
-            id_table: list[Identifier],
             operation: Operation,
-            result: int,
-            arg1: int = -1,
-            arg2: int = -1,
+            result: int | Identifier,
+            arg1: Identifier | None = None,
+            arg2: Identifier | None | bool = None,
     ):
         self.operation = operation
 
         if operation.code in (Code.GOTO, Code.IF, Code.IF_FALSE):
+            if not isinstance(result, int):
+                raise ValueError(f'For operation `{operation}` result must be int')
+
             self.result = result
         else:
-            self.result = id_table[result].lex
+            if not isinstance(result, Identifier):
+                raise ValueError(f'For operation `{operation}` result must be Identifier')
 
-        if arg1 != -1:
-            self.arg1 = id_table[arg1].lex
+            self.result = result.lex
+
+        if arg1 is not None:
+            if not isinstance(arg1, Identifier):
+                raise ValueError(f'arg1 must be Identifier or None')
+
+            self.arg1 = arg1.lex
         else:
             self.arg1 = None
 
         if arg2 is True:
             self.arg2 = True
-        elif arg2 != -1:
-            self.arg2 = id_table[arg2].lex
+        elif arg2 is not None:
+            if not isinstance(arg2, Identifier):
+                raise ValueError(f'arg2 must be Identifier, True or None')
+
+            self.arg2 = arg2.lex
         else:
             self.arg2 = None
 
@@ -37,11 +48,11 @@ class ThreeAddressCommand:
 
 
 if __name__ == '__main__':
-    id_table_: list[Identifier] = [Identifier('x'), Identifier('y'), Identifier('z'), ]
-    print(ThreeAddressCommand(id_table_, Operation(Code.ASS), 0, 1))
-    print(ThreeAddressCommand(id_table_, Operation(Code.ADD, Attribute.OP_ADD), 0, 1, 2))
-    print(ThreeAddressCommand(id_table_, Operation(Code.ADD, Attribute.OP_SUB), 0, 1, 2))
-    print(ThreeAddressCommand(id_table_, Operation(Code.GOTO), 50))
-    print(ThreeAddressCommand(id_table_, Operation(Code.IF, Attribute.OP_LE), 50, 0, 1))
-    print(ThreeAddressCommand(id_table_, Operation(Code.IF_FALSE, Attribute.OP_NE), 100, 0, 1))
-    print(ThreeAddressCommand(id_table_, Operation(Code.IF, Attribute.OP_EQ), 100, 0, True))
+    x, y, z = [Identifier('x'), Identifier('y'), Identifier('z'), ]
+    print(ThreeAddressCommand(Operation(Code.ASS), x, y))
+    print(ThreeAddressCommand(Operation(Code.ADD, Attribute.OP_ADD), x, y, z))
+    print(ThreeAddressCommand(Operation(Code.ADD, Attribute.OP_SUB), x, y, z))
+    print(ThreeAddressCommand(Operation(Code.GOTO), 50))
+    print(ThreeAddressCommand(Operation(Code.IF, Attribute.OP_LE), 50, x, y))
+    print(ThreeAddressCommand(Operation(Code.IF_FALSE, Attribute.OP_NE), 100, z, y))
+    print(ThreeAddressCommand(Operation(Code.IF, Attribute.OP_EQ), 100, x, True))

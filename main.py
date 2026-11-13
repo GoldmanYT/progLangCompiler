@@ -4,7 +4,6 @@ from tkinter.scrolledtext import ScrolledText
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from typing import Iterator
 
-from identifier import Identifier
 from scanner import Scanner
 from codes import Code
 from tokens import Token
@@ -79,8 +78,8 @@ class Window:
         three_address_commands_frame = Labelframe(sgt_top_frame, text='Трёхадресные команды')
         memory_allocation_frame = Labelframe(sgt_top_frame, text='Распределение памяти')
 
-        three_address_commands_text = ScrolledText(three_address_commands_frame)
-        memory_allocation_text = ScrolledText(memory_allocation_frame)
+        self.three_address_commands_text = ScrolledText(three_address_commands_frame, font=('Consolas', 12))
+        self.memory_allocation_text = ScrolledText(memory_allocation_frame, font=('Consolas', 12))
         start_sgt_button = Button(sgt_frame, text='Запуск', command=self.start_sgt_button_action)
 
         scaner_frame.place(**rel_elem_full)
@@ -91,10 +90,10 @@ class Window:
         sgt_top_frame.place(**rel_elem_95_5_v[0])
 
         three_address_commands_frame.place(**rel_elem_half_left)
-        three_address_commands_text.place(**rel_elem_full)
+        self.three_address_commands_text.place(**rel_elem_full)
 
         memory_allocation_frame.place(**rel_elem_half_right)
-        memory_allocation_text.place(**rel_elem_full)
+        self.memory_allocation_text.place(**rel_elem_full)
 
         start_sgt_button.place(**rel_elem_95_5_v[1])
 
@@ -163,7 +162,7 @@ class Window:
         self.program_code_text.tag_configure('const', foreground='#0000ff')
         self.program_code_text.tag_configure('error', background='#ff7777')
 
-        self.program_code_text.bind("<KeyRelease>", self.update_syntax_highlight)
+        self.program_code_text.bind("<KeyRelease>", self.start_sgt_button_action)
         self.update_syntax_highlight()
 
     def update_syntax_highlight(self, *_):
@@ -202,7 +201,7 @@ class Window:
                 self.program_code_text.tag_add(tag, index1, index2)
 
         scanner.restart()
-        sct: Sct = Sct(iter(scanner), scanner.id_table)
+        sct: Sct = Sct(scanner, iter(scanner))
         error_token: Token = sct.scan()
 
         if error_token is not None:
@@ -232,11 +231,13 @@ class Window:
         program_code: str = self.program_code_text.get('1.0', END)
         scanner: Scanner = Scanner(program_code)
         tokens: Iterator[Token] = iter(scanner)
-        id_table: list[Identifier] = scanner.id_table
-        sct = Sct(tokens, id_table)
+        sct = Sct(scanner, tokens)
         error_token = sct.scan()
 
         self.errors_text.delete('1.0', END)
+        self.three_address_commands_text.delete('1.0', END)
+        self.memory_allocation_text.delete('1.0', END)
+
         if error_token is not None:
             index1 = self.get_tk_index(error_token.start)
             index2 = self.get_tk_index(error_token.end)
@@ -245,6 +246,12 @@ class Window:
             self.errors_text.insert(END, error_token.lex.format(pos=index1, lex=lex, **error_token.kwargs))
         else:
             self.errors_text.insert(END, 'СУ-трансляция успешно завершена')
+            for command in sct.three_address_commands:
+                self.three_address_commands_text.insert(END, str(command) + '\n')
+            for var in sct.get_variable_list():
+                self.memory_allocation_text.insert(END, var.get_memory_address() + '\n')
+
+        self.update_syntax_highlight()
 
 
 if __name__ == '__main__':
