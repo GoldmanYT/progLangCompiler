@@ -1,0 +1,12 @@
+-- Базовый пример, минимальный по грамматике --
+procedure15 KuznetsovDA;
+var15
+    a: integer;
+    f: boolean;
+{
+    while15 (f) {
+        a <- 1;
+    };
+    a <- 0;
+}
+

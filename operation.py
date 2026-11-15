@@ -9,8 +9,6 @@ class Operation:
         Code.MULT: [Attribute.OP_MULT, Attribute.OP_DIV],
         Code.GOTO: [None],
         Code.IF: [Attribute.OP_LT, Attribute.OP_GT, Attribute.OP_LE, Attribute.OP_GE, Attribute.OP_EQ, Attribute.OP_NE],
-        Code.IF_FALSE: [Attribute.OP_LT, Attribute.OP_GT, Attribute.OP_LE, Attribute.OP_GE, Attribute.OP_EQ,
-                        Attribute.OP_NE],
     }
 
     def __init__(
@@ -35,10 +33,10 @@ class Operation:
             return '{result} := {arg1} ' f'{self.attribute.value}' ' {arg2}'
 
         if self.code == Code.GOTO:
-            return 'goto {result}'
+            return 'goto {result:03}'
 
-        if self.code in (Code.IF, Code.IF_FALSE):
-            return f'{self.code.value}' ' {arg1} ' f'{self.attribute.value}' ' {arg2} goto {result}'
+        if self.code == Code.IF:
+            return f'{self.code.value}' ' {arg1} ' f'{self.attribute.value}' ' {arg2} goto {result:03}'
 
         raise NotImplementedError
 
@@ -51,6 +49,4 @@ if __name__ == '__main__':
     print(Operation(Code.MULT, Attribute.OP_DIV))
     print(Operation(Code.GOTO))
     print(Operation(Code.IF, Attribute.OP_EQ))
-    print(Operation(Code.IF_FALSE, Attribute.OP_NE))
     print(Operation(Code.IF, Attribute.OP_LT))
-    print(Operation(Code.IF_FALSE, Attribute.OP_GT))

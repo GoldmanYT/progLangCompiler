@@ -32,7 +32,6 @@ class Code(Enum):
     ERR = 'err'  # error
     GOTO = 'goto'
     IF = 'if'
-    IF_FALSE = 'ifFalse'
 
     def get_lex_info(self):
         names = {

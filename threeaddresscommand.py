@@ -9,12 +9,12 @@ class ThreeAddressCommand:
             self,
             operation: Operation,
             result: int | Identifier,
-            arg1: Identifier | None = None,
-            arg2: Identifier | None | bool = None,
+            arg1: Identifier | bool | None = None,
+            arg2: Identifier | bool | None = None,
     ):
         self.operation = operation
 
-        if operation.code in (Code.GOTO, Code.IF, Code.IF_FALSE):
+        if operation.code in (Code.GOTO, Code.IF):
             if not isinstance(result, int):
                 raise ValueError(f'For operation `{operation}` result must be int')
 
@@ -25,7 +25,9 @@ class ThreeAddressCommand:
 
             self.result = result.lex
 
-        if arg1 is not None:
+        if isinstance(arg1, bool):
+            self.arg1 = arg1
+        elif arg1 is not None:
             if not isinstance(arg1, Identifier):
                 raise ValueError(f'arg1 must be Identifier or None')
 
@@ -54,5 +56,4 @@ if __name__ == '__main__':
     print(ThreeAddressCommand(Operation(Code.ADD, Attribute.OP_SUB), x, y, z))
     print(ThreeAddressCommand(Operation(Code.GOTO), 50))
     print(ThreeAddressCommand(Operation(Code.IF, Attribute.OP_LE), 50, x, y))
-    print(ThreeAddressCommand(Operation(Code.IF_FALSE, Attribute.OP_NE), 100, z, y))
     print(ThreeAddressCommand(Operation(Code.IF, Attribute.OP_EQ), 100, x, True))

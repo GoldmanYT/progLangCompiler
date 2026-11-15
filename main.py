@@ -112,7 +112,7 @@ class Window:
 
         right_tab_widget.place(**rel_elem_half_right)
 
-        self.indexes = []
+        self.indexes = [-1]
         self.current_file_name = 'new'
         self.load_program_code('')
 
@@ -141,6 +141,7 @@ class Window:
         if filename != '':
             with open(filename, 'w', encoding='utf-8') as file:
                 file.write(self.program_code_text.get('1.0', END))
+                self.current_file_name = file.name
 
     def get_tk_index(self, index):
         l = 0
@@ -163,7 +164,7 @@ class Window:
         self.program_code_text.tag_configure('error', background='#ff7777')
 
         self.program_code_text.bind("<KeyRelease>", self.start_sgt_button_action)
-        self.update_syntax_highlight()
+        self.start_sgt_button_action()
 
     def update_syntax_highlight(self, *_):
         code_to_tag = {
@@ -246,8 +247,9 @@ class Window:
             self.errors_text.insert(END, error_token.lex.format(pos=index1, lex=lex, **error_token.kwargs))
         else:
             self.errors_text.insert(END, 'СУ-трансляция успешно завершена')
-            for command in sct.three_address_commands:
-                self.three_address_commands_text.insert(END, str(command) + '\n')
+            for i, command in enumerate(sct.three_address_commands):
+                self.three_address_commands_text.insert(END, f'{i:03}:\t' + str(command) + '\n')
+            self.three_address_commands_text.insert(END, f'{len(sct.three_address_commands):03}:')
             for var in sct.get_variable_list():
                 self.memory_allocation_text.insert(END, var.get_memory_address() + '\n')
 

@@ -1,6 +1,9 @@
 from dataclasses import dataclass
-
 from typecode import TypeCode
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from identifier import Identifier
 
 
 @dataclass

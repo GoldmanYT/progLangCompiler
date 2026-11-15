@@ -1,0 +1,25 @@
+-- Пример с арифметическими операциями и структурой --
+procedure15 KuznetsovDA;
+using15
+    i32 integer;
+    f64 float;
+    b1 boolean;
+    S class15 {
+        x: integer;
+        y: float;
+    };
+var15
+    a: i32;
+    b: i32;
+    c: i32;
+    p: f64;
+    q: f64;
+    r: f64;
+    s1: S;
+    s2: S;
+{
+    a <- 76 + (s1.x - 28) * 56 / s2.x;
+    s2.y <- p * (3.14 - s1.y / s2.y);
+    c <- (a * 38 - b) * 71 / c + 42;
+}
+
